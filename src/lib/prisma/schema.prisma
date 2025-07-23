@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  emailVerified DateTime?
+  password  String?
+  role      String @default("user")
+  orders    Order[]
+  createdAt DateTime @default(now())
+  accounts  Account[]
+  sessions  Session[]
+  cart      Cart?
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  price       Int
+  stock       Int
+  image       String
+  description String
+  onSale      Boolean     @default(false)
+  saleText    String?
+  category    String
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  user      User?       @relation(fields: [userId], references: [id])
+  userId    String?
+  total     Int
+  status    String      @default("pending")
+  createdAt DateTime    @default(now())
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   String
+}
+
+model Account {
+  id                 String   @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Cart {
+  id      String   @id @default(uuid())
+  userId  String   @unique
+  user    User     @relation(fields: [userId], references: [id])
+  items   CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+}
