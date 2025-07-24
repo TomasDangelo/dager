@@ -1,9 +1,23 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth, { NextAuthOptions, DefaultSession } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma/client";
 import bcrypt from "bcryptjs";
+
+// Extiende el tipo de sesión y usuario para incluir id y role
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      role?: string;
+    } & DefaultSession["user"];
+  }
+  interface User {
+    id: string;
+    role?: string;
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -24,16 +38,24 @@ export const authOptions: NextAuthOptions = {
         if (!user || !user.password) return null;
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) return null;
-        return { id: user.id, email: user.email, name: user.name };
+        // Incluye el role en el objeto user
+        return { id: user.id, email: user.email, name: user.name, role: user.role };
       },
     }),
   ],
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role;
+      }
+      return token;
+    },
     async session({ session, token }) {
-      if (token && session.user) {
+      if (session.user && token?.sub) {
         session.user.id = token.sub;
+        if (token.role) session.user.role = token.role as string;
       }
       return session;
     },
