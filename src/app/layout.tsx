@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Lexend } from "next/font/google";
 import "./globals.css";
-
+import Navbar from "@/components/ui/Navbar";
+import Footer from "@/components/ui/Footer";
+import { UserProvider } from "@/context/UserContext";
+import { CartProvider } from "@/context/CartContext";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -10,6 +13,13 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const lexend = Lexend({
+  subsets: ['latin'],
+  weight: ['400', '500', '700', '900'],
+  variable: '--font-lexend',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -23,13 +33,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Navbar />
-        <main className="bg-white text-gray-900 min-h-screen flex flex-col">
-        {children}
-        </main>
-        <Footer />
+    <html lang="es" className={lexend.variable}>
+      <body>
+        <UserProvider>
+          <CartProvider>
+            <Navbar />
+            <main className="bg-white text-gray-900 min-h-screen flex flex-col">
+            {children}
+            </main>
+            <Footer />
+          </CartProvider>
+        </UserProvider>
       </body>
     </html>
   );

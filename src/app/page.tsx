@@ -1,103 +1,59 @@
-import Image from "next/image";
+import Link from "next/link";
+import ProductList from "@/components/products/ProductList";
 
-export default function Home() {
+export default function HomePage() {
+  // Traer productos destacados desde props o fetcher si lo deseas
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="relative flex min-h-screen flex-col bg-[var(--background-color)] font-['Lexend',sans-serif]">
+      <main>
+        {/* Hero */}
+        <section className="flex min-h-[60vh] flex-col gap-6 bg-cover bg-center bg-no-repeat items-start justify-end px-4 pb-10 rounded-xl"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%), url('https://lh3.googleusercontent.com/aida-public/AB6AXuAL4Djq19ZV586MlZp8PshfXS_MR6lPsCvN3nq5Hcs3BFPbCaiJwYbzXcxhz_EEto4ylx171zUsro16W0ePdO3617wz8O7EJIO9P2oHSa5eaJz-jDJjfYKYl_2WPxo95NyPMR6KTFSSbTmTVpJMNaBBNPFZRJuKGGRuRMnBg-Zu-hifnLz8J9f5vQXB6v014TXmOOYnJ4egJ5roVHJ51U0MYEoEcTD1dR7Ad_5C3n34T81-06WzdNrJ3R0js9XxPPSTz7yXhKQvtXS-')"
+          }}>
+          <div className="flex flex-col gap-2 text-left">
+            <h1 className="text-white text-5xl font-black leading-tight tracking-[-0.033em] animate-slide-in-bottom">Däger</h1>
+            <h2 className="text-gray-200 text-base font-normal animate-slide-in-bottom animate-delay-1">Eleva tu performance.</h2>
+          </div>
+          <Link href="/productos"
+            className="flex min-w-[84px] max-w-[480px] items-center justify-center rounded-full h-12 px-6 bg-[var(--primary-color)] text-white text-base font-bold leading-normal tracking-wider hover:bg-blue-600 transition-colors duration-300 transform hover:scale-105 animate-slide-in-bottom animate-delay-2"
+          >
+            Comprá ahora
+          </Link>
+        </section>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+        {/* Featured Categories */}
+        <section className="p-4">
+          <h2 className="text-white text-2xl font-bold pb-3 pt-5 animate-slide-in-bottom animate-delay-3">Categorias populares</h2>
+          <div className="flex overflow-x-auto py-4 gap-4 animate-slide-in-bottom animate-delay-4">
+            {/*  mapear categorías reales aca */}
+            {[
+              { name: "Women's", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDx9TS2LKUrH05-nafKy49n7muG2igLd3tBtuBaxYoNan2hcs_9OkfndLDX_lVS4ey67we1JLMHo8i5uCuwqZp_qQzsEPzqpzlRDLDuuJ2kEVqzJGdMtj1CoX8wlcvrJ7ITzupx5kOGTjnx3JNPMotKJln9UnCU4QflhUzxiKQE9quOa9FI8dWJ5CUMF4tJFfX6RZiwEEXtDbsosmbj3yFlKY8Ii0Yy3kBsj8jDtCp9TeSFD_c6--NofX4y-U8w54eeWroAFYrU2g2z" },
+              { name: "Men's", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDwqPEnJziKk9viGDrl6D8MZ4uEacKfer496HdVusOCdFw7OaH_Duf_z6WUW3mImluhTpclZZ9WNcGGN6xgaUUwHs94aYxKdwrc9-WaqiesmPvbwqaBayfUEMJN4FSGrYATWZEahmRXeU3yDC7RIBJwyAmFSCe5lk-En4la9zq-ZsFVx7E4DYoCidMHMfw1Cr1cjm9B2rpzYzxIeG0FSGmPzrBxtZCfXsoz81Y-ROyW2RTlC00UwdSQ-wDkXJgdfqScVJg4iUwgKuq_" },
+              { name: "Accessories", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCVsr4ow9nLhOf1LpMURijDuT0mAXwoVboc9zq3SJo5j3xIcwnkJK09chOZaEwkbMupnq7Qoe1B7gmYEGuHKEABB-IKYDYmC8Z8gTinOcwf9sJdztvWchvFDyt6ztQtRikwIUgjjfEEkSPg0DD0AiH67scGPFm8hOeD-s5AGx1TdJfNAvuss4ZNNBENyeK4aDQTg3DTKkIKiDTRzdSr4XICRW1Zc41syF6l08AhKnh9cnOM58W3hzhsI99rEalhOQvBVILH9dQWEw2k" }
+            ].map(cat => (
+              <div key={cat.name} className="flex flex-col gap-3 rounded-lg min-w-64 flex-shrink-0 group">
+                <div className="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-xl flex flex-col overflow-hidden transform group-hover:scale-105 transition-transform duration-300"
+                  style={{ backgroundImage: `url('${cat.img}')` }}>
+                  <div className="mt-auto p-4 bg-gradient-to-t from-black/60 to-transparent">
+                    <p className="text-white text-xl font-bold">{cat.name}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* New Arrivals */}
+        <section className="px-4">
+          <h2 className="text-white text-2xl font-bold pb-3 pt-5">New Arrivals</h2>
+          {/* Puedes usar ProductList y pasarle solo los nuevos */}
+          <ProductList products={[]} limit={4} />
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
     </div>
   );
 }

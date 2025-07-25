@@ -4,7 +4,5 @@ export type User = {
     email: string;
     role: string;
     createdAt: Date;
-    emailVerified: Date;
-    password: string;
 }
 
