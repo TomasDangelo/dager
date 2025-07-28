@@ -1,6 +1,6 @@
 'use client'
-import { createContext, useState, useEffect, useCallback } from "react";
-import { getSession } from "next-auth/react";
+import { createContext } from "react";
+import { useSession } from "next-auth/react";
 import type { User } from "@/types/userTypes";
 
 interface UserContextType {
@@ -13,33 +13,18 @@ interface UserContextType {
 export const UserContext = createContext<UserContextType | null>(null);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const { data: session, status } = useSession();
 
-  const fetchUser = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const session = await getSession();
-      if (session?.user) {
-        setUser(session.user as User);
-      } else {
-        setUser(null);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar usuario");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // status: "loading" | "authenticated" | "unauthenticated"
+  const user = session?.user as User | null;
+  const loading = status === "loading";
+  const error = null;
 
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+  // refreshUser es innecesario, pero lo dejamos por compatibilidad
+  const refreshUser = async () => {};
 
   return (
-    <UserContext.Provider value={{ user, loading, error, refreshUser: fetchUser }}>
+    <UserContext.Provider value={{ user, loading, error, refreshUser }}>
       {children}
     </UserContext.Provider>
   );

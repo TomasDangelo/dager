@@ -5,6 +5,7 @@ import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { UserProvider } from "@/context/UserContext";
 import { CartProvider } from "@/context/CartContext";
+import { SessionProvider } from "next-auth/react";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -35,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={lexend.variable}>
       <body>
+        <SessionProvider>
         <UserProvider>
           <CartProvider>
             <Navbar />
@@ -44,6 +46,7 @@ export default function RootLayout({
             <Footer />
           </CartProvider>
         </UserProvider>
+        </SessionProvider>
       </body>
     </html>
   );

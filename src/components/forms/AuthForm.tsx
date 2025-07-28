@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/hooks/useUser";
 
 //Form de login para usuarios
 export default function AuthForm() {
@@ -9,7 +10,7 @@ export default function AuthForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-
+  const {refreshUser} = useUser()
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -19,7 +20,10 @@ export default function AuthForm() {
       redirect: false,
     });
     if (res?.error) setError("Credenciales inválidas");
-    else router.push("/");
+    else {
+      await refreshUser()
+      router.push("/")
+    }
   }
 
   return (
