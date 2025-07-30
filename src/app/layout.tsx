@@ -3,9 +3,7 @@ import { Geist, Geist_Mono, Lexend } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
-import { UserProvider } from "@/context/UserContext";
-import { CartProvider } from "@/context/CartContext";
-import { SessionProvider } from "next-auth/react";
+import { Providers } from "./providers";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -36,17 +34,13 @@ export default function RootLayout({
   return (
     <html lang="es" className={lexend.variable}>
       <body>
-        <SessionProvider>
-        <UserProvider>
-          <CartProvider>
+        <Providers>
             <Navbar />
             <main className="bg-white text-gray-900 min-h-screen flex flex-col">
             {children}
             </main>
             <Footer />
-          </CartProvider>
-        </UserProvider>
-        </SessionProvider>
+        </Providers>
       </body>
     </html>
   );

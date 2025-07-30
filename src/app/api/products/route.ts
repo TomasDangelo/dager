@@ -5,28 +5,47 @@ import { requireAdmin } from '../auth/requireAdmin';
 import { errorResponse } from '@/helpers/errorResponse';
 import { productSchema } from '@/lib/validation/productSchema';
 
+
+type andFiltersType = {
+  category?: string;
+  onSale?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+  price?: {
+    gte?: number;
+    lte?: number;
+  };
+}
 // Obtener productos (público) con paginación opcional
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
 
-  const skip = parseInt(searchParams.get("skip") || "0", 10);
-  const take = parseInt(searchParams.get("take") || "20", 10);
-  const category = searchParams.get("category");
+  const skip = parseInt(searchParams.get("skip")  || "0", 10);
+  const take = parseInt(searchParams.get("take")  || "20", 10);
+  const category = searchParams.get("category") || undefined;
   const onSale = searchParams.get("onSale") === "true";
-  const minPrice = parseFloat(searchParams.get("minPrice") || "0");
-  const maxPrice = parseFloat(searchParams.get("maxPrice") || "100000");
+  const hasOnSale = searchParams.has("onSale");
+  const minPrice = searchParams.has("minPrice") ? parseFloat(searchParams.get("minPrice")!) : undefined;
+  const maxPrice = searchParams.has("maxPrice") ? parseFloat(searchParams.get("maxPrice")!) : undefined;
+
+  const andFilters: andFiltersType[] = [];
+
+  if (category) andFilters.push({ category });
+  if (hasOnSale) andFilters.push({ onSale });
+  // solo agregamos si vino minPrice o maxPrice por params
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    andFilters.push({
+      price: {
+        ...(minPrice !== undefined ? { gte: minPrice } : {}),
+        ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+      }
+    });
+  }
 
   const products = await prisma.product.findMany({
     skip,
     take,
-    where: {
-      ...(category && { category }),
-      ...(searchParams.has("onSale") && { onSale }),
-      price: {
-        gte: minPrice,
-        lte: maxPrice,
-      }
-    }
+    where: andFilters.length ? { AND: andFilters } : {},
   });
 
   return NextResponse.json(products);
