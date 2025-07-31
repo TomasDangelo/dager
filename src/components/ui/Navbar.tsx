@@ -1,8 +1,8 @@
-"use client";
+'use client';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { ShoppingCart, Menu, X } from "lucide-react";
+import { ShoppingCart, Menu, X, User2Icon, LogInIcon } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 
 const NAV_ITEMS = [
@@ -15,12 +15,8 @@ export default function Navbar() {
   const { user } = useUser();
   const [open, setOpen] = useState(false);
 
-  const userItems = user
-    ? [
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Salir", href: "/api/auth/signout", external: true },
-      ]
-    : [{ label: "Ingresar", href: "/login" }];
+  const userItems = user? [ { label: "Dashboard", href: "/dashboard", icon: User2Icon } ]
+    : [{ label: "Ingresar", href: "/login", icon: LogInIcon }];
 
   const isActive = (href: string) => pathname === href;
 
@@ -32,57 +28,46 @@ export default function Navbar() {
         </button>
         <Link href="/" className="text-2xl font-bold text-white tracking-wider">DÄGER.</Link>
         <div className="hidden md:flex gap-6 items-center">
-          {[...NAV_ITEMS, ...userItems].map((item) =>
+          {[...NAV_ITEMS].map((item) =>
             item.external ? (
-              <a key={item.href} href={item.href} className={`nav-link ${isActive(item.href) ? 'active' : ''}`}>
+              <a key={item.href} href={item.href} className={`relative text-white font-medium hover:text-gray-300 transition-colors duration-200 after:absolute after:left-0 after:bottom-[-4px] after:h-[2px] after:w-0 after:bg-[var(--primary-color)] hover:after:w-full after:transition-all after:duration-300 ${isActive(item.href) ? 'text-[var(--primary-color)] after:w-full' : ''}`}>
                 {item.label}
               </a>
             ) : (
-              <Link key={item.href} href={item.href} className={`nav-link ${isActive(item.href) ? 'active' : ''}`}>
+              <Link key={item.href} href={item.href} className={`relative text-white font-medium hover:text-gray-300 transition-colors duration-200 after:absolute after:left-0 after:bottom-[-4px] after:h-[2px] after:w-0 after:bg-[var(--primary-color)] hover:after:w-full after:transition-all after:duration-300 ${isActive(item.href) ? 'text-[var(--primary-color)] after:w-full' : ''}`}>
                 {item.label}
               </Link>
             )
           )}
         </div>
-        <div className="flex w-12 items-center justify-end cursor-pointer text-white">
-          <ShoppingCart />
+        <div className="flex w-16 items-center justify-end cursor-pointer text-white gap-2">
+          {userItems.map((item) =>
+            item.external ? (
+              <a key={item.href} href={item.href} className="block text-white py-2">
+                {item.icon ? <item.icon className="inline mr-1" size={18} /> : null}
+              </a>
+            ) : (
+              <Link key={item.href} href={item.href} className="block text-white py-2">
+                {item.icon ? <item.icon className="inline mr-1" size={18} /> : null}
+              </Link>
+            )
+          )}
+           <Link href="/carrito" className="relative"> 
+            <ShoppingCart />
+           </Link>
         </div>
       </nav>
       {open && (
-        <div className="md:hidden bg-[var(--background-color)] border-t border-[var(--accent-color)] px-4 py-2 space-y-2">
+        <div className="md:hidden bg-[var(--background-color)] border-t border-gray-700 px-4 py-2 space-y-2">
           {[...NAV_ITEMS, ...userItems].map((item) =>
             item.external ? (
-              <a key={item.href} href={item.href} className="block text-white py-2">{item.label}</a>
+              <a key={item.href} href={item.href} className="block text-white py-2 hover:text-gray-400 transition-colors duration-200">{item.label}</a>
             ) : (
-              <Link key={item.href} href={item.href} className="block text-white py-2">{item.label}</Link>
+              <Link key={item.href} href={item.href} className="block text-white py-2 hover:text-gray-400 transition-colors duration-200">{item.label}</Link>
             )
           )}
         </div>
       )}
-      <style jsx>{`
-        .nav-link {
-          position: relative;
-          color: white;
-          font-weight: 500;
-        }
-        .nav-link::after {
-          content: "";
-          position: absolute;
-          left: 0;
-          bottom: -4px;
-          height: 2px;
-          width: 0%;
-          background-color: var(--primary-color);
-          transition: width 0.3s ease-in-out;
-        }
-        .nav-link:hover::after,
-        .nav-link.active::after {
-          width: 100%;
-        }
-        .nav-link.active {
-          color: var(--primary-color);
-        }
-      `}</style>
     </header>
   );
 }

@@ -36,7 +36,7 @@ export default function RootLayout({
       <body>
         <Providers>
             <Navbar />
-            <main className="bg-white text-gray-900 min-h-screen flex flex-col">
+            <main className="bg-[var(--background-color)] text-gray-900 min-h-screen flex flex-col">
             {children}
             </main>
             <Footer />

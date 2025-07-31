@@ -67,7 +67,7 @@ export async function GET(request: Request) {
 
 //Crear muchos productos -bulk- (ELIMINAR)
 export async function POST(request: Request) {
-  const user = await requireAuth();
+/*   const user = await requireAuth(); */
 
   const body = await request.json();
 
@@ -115,3 +115,4 @@ export async function DELETE(request: Request) {
   await prisma.product.delete({ where: { id } });
   return NextResponse.json({ message: "Producto eliminado" });
 }
+
