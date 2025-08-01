@@ -1,7 +1,5 @@
 import { prisma } from '@/lib/prisma/client';
 import { NextResponse } from 'next/server';
-import { requireAuth } from '../auth/requireAuth';
-import { requireAdmin } from '../auth/requireAdmin';
 import { errorResponse } from '@/helpers/errorResponse';
 import { productSchema } from '@/lib/validation/productSchema';
 
@@ -90,29 +88,4 @@ export async function POST(request: Request) {
 
 
 
-// Actualizar producto (solo admin)
-export async function PUT(request: Request) {
-  const user = await requireAuth();
-  requireAdmin(user);
-  const body = await request.json();
-  const { id, ...rest } = body;
-  const parse = productSchema.partial().safeParse(rest);
-  if (!parse.success) return errorResponse("Datos inválidos", 400);
-
-  const product = await prisma.product.update({
-    where: { id },
-    data: parse.data,
-  });
-  return NextResponse.json(product);
-}
-
-// Eliminar producto (solo admin)
-export async function DELETE(request: Request) {
-  const user = await requireAuth();
-  requireAdmin(user);
-  const body = await request.json();
-  const { id } = body;
-  await prisma.product.delete({ where: { id } });
-  return NextResponse.json({ message: "Producto eliminado" });
-}
 

@@ -1,0 +1,46 @@
+import { prisma } from '@/lib/prisma/client';
+import { NextResponse } from 'next/server';
+import { requireAuth } from '../../auth/requireAuth';
+import { requireAdmin } from '../../auth/requireAdmin';
+import { errorResponse } from '@/helpers/errorResponse';
+import { productSchema } from '@/lib/validation/productSchema';
+
+
+// Obtener un producto específico
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const product = await prisma.product.findUnique({where: { id }});
+
+  if (!product) {
+    return errorResponse("Producto no encontrado", 404);
+  }
+
+  return NextResponse.json(product);
+}
+
+// Actualizar un producto (solo admin)
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const user = await requireAuth();
+  requireAdmin(user);
+  const body = await request.json();
+  const { id } = params;
+  const parse = productSchema.partial().safeParse(body);
+
+  if (!parse.success) return errorResponse("Datos inválidos", 400);
+
+  const product = await prisma.product.update({
+    where: { id },
+    data: parse.data,
+  });
+
+  return NextResponse.json(product);
+}
+
+// Eliminar un producto (solo admin)
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  const user = await requireAuth();
+  requireAdmin(user);
+  const { id } = params;
+  await prisma.product.delete({ where: { id } });
+  return NextResponse.json({ message: "Producto eliminado" });
+}
