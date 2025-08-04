@@ -56,6 +56,7 @@ export default function ProductModal({ open, onClose, initialProduct, onSaved, o
 
   async function handleDelete() {
     if (!form.id) return;
+    if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
     setLoading(true);
     try {
       await api.delete("/admin/products", { data: { id: form.id } });
@@ -73,16 +74,29 @@ export default function ProductModal({ open, onClose, initialProduct, onSaved, o
       <form onSubmit={handleSubmit} className="bg-[var(--card-background-color)] text-white p-8 rounded-xl shadow-2xl w-full max-w-lg flex flex-col gap-4 relative">
         <button type="button" className="absolute top-2 right-4 text-2xl" onClick={onClose}>&times;</button>
         <h2 className="text-2xl font-bold mb-2">{form.id ? "Editar producto" : "Nuevo producto"}</h2>
+         <label className="font-semibold">Nombre
         <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Nombre" value={form.name || ""} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+        </label>
+        <label className="font-semibold">Imagen (URL)
         <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Imagen (URL)" value={form.image || ""} onChange={e => setForm(f => ({ ...f, image: e.target.value }))} required />
+        </label>
+        <label className="font-semibold">Precio
         <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Precio" type="number" value={form.price ?? ""} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))} required min={0} />
+        </label>
+        <label className="font-semibold">Stock
         <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Stock" type="number" value={form.stock ?? ""} onChange={e => setForm(f => ({ ...f, stock: Number(e.target.value) }))} required min={0} />
+        </label>
+        <label className="font-semibold">Categoría
         <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Categoría" value={form.category || ""} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} required />
+        </label>
+        <label className="font-semibold">Descripción
         <textarea className="p-2 rounded bg-[var(--background-color)] border" placeholder="Descripción" value={form.description || ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} required />
+        </label>
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={form.onSale || false} onChange={e => setForm(f => ({ ...f, onSale: e.target.checked }))} />
           En oferta
         </label>
+        
         <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Texto de oferta" value={form.saleText || ""} onChange={e => setForm(f => ({ ...f, saleText: e.target.value }))} />
         {error && <span className="text-red-400">{error}</span>}
         <div className="flex gap-2 mt-2">

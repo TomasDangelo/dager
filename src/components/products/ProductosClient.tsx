@@ -4,6 +4,7 @@ import ProductFilters from "@/components/products/ProductFilters";
 import ProductList from "@/components/products/ProductList";
 import { useInfiniteProducts } from "@/hooks/useInfiniteProducts";
 import type { Product } from "@/types/productTypes";
+import ProductModal from "./ProductModal";
 
 const PAGE_SIZE = 12;
 
@@ -17,6 +18,7 @@ export type ProductFiltersType = {
 export default function ProductosClient({ initialProducts, initialCategories,}: { initialProducts: Product[]; initialCategories: string[];}) {
   // Estado de filtros
   const [filters, setFilters] = useState<ProductFiltersType>({});
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // Hook de productos infinitos
   const { products, loadMore, hasMore, loading } = useInfiniteProducts({
@@ -54,7 +56,14 @@ useEffect(() => {
   return (
     <div className="bg-[var(--background-color)] min-h-screen font-['Lexend',sans-serif] p-4">
       <ProductFilters categories={categories} filters={filters} setFilters={setFilters} />
-      <ProductList products={products} />
+      <ProductList products={products} setEditingProduct={setEditingProduct} />
+      <ProductModal
+        open={!!editingProduct}
+        initialProduct={editingProduct || undefined}
+        onClose={() => setEditingProduct(null)}
+        onSaved={() => setEditingProduct(null)}
+        onDeleted={() => setEditingProduct(null)}
+      />
     </div>
   );
 }

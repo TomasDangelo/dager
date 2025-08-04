@@ -32,7 +32,16 @@ export async function POST(request: Request) {
   if (!parse.success) return errorResponse("Datos inválidos", 400);
 
   const { items, total } = parse.data;
-
+  await prisma.$transaction(async (tx) => {
+    for (const item of items) {
+      const product = await tx.product.findUnique({ where: { id: item.productId } });
+      if (!product || product.stock < item.quantity) throw errorResponse("Sin stock", 400);
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+  });
   const order = await prisma.order.create({
     data: {
       userId: user.id,

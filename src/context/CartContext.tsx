@@ -40,18 +40,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const refreshCart = fetchCart;
 
-  const addToCartHandler = async (productId: string, quantity: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await addToCart(productId, quantity);
-      await fetchCart();
-    } catch (err: any) {
-      setError(err?.response?.data?.error || "Error al agregar al carrito");
-    } finally {
-      setLoading(false);
+  //Add to cart optimistia para actualizar el estado local inmediatamente y luego sincronizar 
+ const addToCartHandler = async (productId: string, quantity: number) => {
+  setCart(prev => {
+    if (!prev) return prev;
+    const itemIdx = prev.items.findIndex(i => i.productId === productId);
+    if (itemIdx >= 0) {
+      const items = [...prev.items];
+      items[itemIdx] = { ...items[itemIdx], quantity: items[itemIdx].quantity + quantity };
+      return { ...prev, items };
     }
-  };
+    // Si no existe, agrega el producto 
+    return { ...prev, items: [...prev.items, { productId, quantity }] };
+  });
+  try {
+    await addToCart(productId, quantity);
+    await fetchCart();
+  } catch (err) {
+    await fetchCart(); // Rollback si hay error
+  }
+};
 
   const updateCartItemHandler = async (productId: string, quantity: number) => {
     setLoading(true);

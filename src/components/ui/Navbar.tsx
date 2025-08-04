@@ -15,7 +15,7 @@ export default function Navbar() {
   const { user } = useUser();
   const [open, setOpen] = useState(false);
 
-  const userItems = user? [ { label: "Dashboard", href: "/dashboard", icon: User2Icon } ]
+  const userItems = user? [ { label: "Dashboard", href: "/dashboard", icon: User2Icon, showLabel: false }, { label: "Panel de administrador", href: "/admin", showLabel: true } ]
     : [{ label: "Ingresar", href: "/login", icon: LogInIcon }];
 
   const isActive = (href: string) => pathname === href;
@@ -49,6 +49,7 @@ export default function Navbar() {
             ) : (
               <Link key={item.href} href={item.href} className="block text-white py-2">
                 {item.icon ? <item.icon className="inline mr-1" size={18} /> : null}
+                { item.showLabel ? item.label : null}
               </Link>
             )
           )}

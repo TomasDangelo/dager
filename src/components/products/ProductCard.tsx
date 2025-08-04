@@ -1,3 +1,4 @@
+'use client'
 import type { Product } from "@/types/productTypes";
 import Link from "next/link";
 import AddToCartButton from "../cart/AddToCartButton";
@@ -5,14 +6,17 @@ import { useUser } from "@/hooks/useUser";
 import { useState } from "react";
 import ProductModal from "./ProductModal";
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product, onEdit }: { product: Product, onEdit?: () => void; }) {
   const { user } = useUser();
-  const [modalOpen, setModalOpen] = useState(false);
 
-  return (
+
+ return (
     <div className="group flex flex-col gap-2 bg-[var(--card-background-color)] p-3 rounded-xl shadow-lg hover:shadow-2xl transition-shadow transform hover:-translate-y-1 relative">
       <Link href={`/productos/${product.id}`} className="block">
-        <div className="aspect-[3/4] bg-cover bg-center rounded-lg" style={{ backgroundImage: `url('${product.image}')` }} />
+        <div
+          className="aspect-[3/4] bg-cover bg-center rounded-lg"
+          style={{ backgroundImage: `url('${product.image}')` }}
+        />
         <div>
           <p className="text-[var(--text-primary)] text-base font-semibold">{product.name}</p>
           <p className="text-[var(--text-secondary)] text-sm">${product.price}</p>
@@ -22,10 +26,15 @@ export default function ProductCard({ product }: { product: Product }) {
         <AddToCartButton product={product}>Agregar al carrito</AddToCartButton>
       </div>
       {user?.role === "admin" && (
-        <>
-          <button onClick={() => setModalOpen(true)} className="absolute top-2 right-2 bg-yellow-600 text-white px-2 py-1 rounded text-xs hover:bg-yellow-700 transition">Editar</button>
-          <ProductModal open={modalOpen} onClose={() => setModalOpen(false)} initialProduct={product} />
-        </>
+        <button
+          onClick={e => {
+            e.stopPropagation();
+            onEdit?.();
+          }}
+          className="absolute top-2 right-2 bg-yellow-600 text-white px-2 py-1 rounded text-xs hover:bg-yellow-700 transition"
+        >
+          Editar
+        </button>
       )}
     </div>
   );
