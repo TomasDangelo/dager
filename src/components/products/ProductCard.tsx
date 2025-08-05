@@ -1,13 +1,9 @@
-'use client'
 import type { Product } from "@/types/productTypes";
 import Link from "next/link";
 import AddToCartButton from "../cart/AddToCartButton";
-import { useUser } from "@/hooks/useUser";
-import { useState } from "react";
-import ProductModal from "./ProductModal";
+import { User } from "@/types/userTypes";
 
-export default function ProductCard({ product, onEdit }: { product: Product, onEdit?: () => void; }) {
-  const { user } = useUser();
+export default function ProductCard({ product, onEdit, user }: { product: Product, onEdit?: () => void; user?: User | null }) {
 
 
  return (
@@ -26,11 +22,7 @@ export default function ProductCard({ product, onEdit }: { product: Product, onE
         <AddToCartButton product={product}>Agregar al carrito</AddToCartButton>
       </div>
       {user?.role === "admin" && (
-        <button
-          onClick={e => {
-            e.stopPropagation();
-            onEdit?.();
-          }}
+        <button onClick={e => { e.stopPropagation(); onEdit?.()}}
           className="absolute top-2 right-2 bg-yellow-600 text-white px-2 py-1 rounded text-xs hover:bg-yellow-700 transition"
         >
           Editar

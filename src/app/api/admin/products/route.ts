@@ -4,6 +4,7 @@ import { requireAuth } from '../../auth/requireAuth';
 import { requireAdmin } from '../../auth/requireAdmin';
 import { productSchema } from '@/lib/validation/productSchema';
 import { errorResponse } from '@/helpers/errorResponse';
+import { revalidatePath } from "next/cache";
 
 // Listar productos (admin)
 export async function GET() {
@@ -37,6 +38,8 @@ export async function PUT(request: Request) {
     where: { id },
     data: parse.data,
   });
+  revalidatePath("/productos"); // revalida la página estática SSR y la home 
+  revalidatePath("/"); 
   return NextResponse.json(product);
 }
 

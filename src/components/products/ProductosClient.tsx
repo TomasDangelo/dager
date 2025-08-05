@@ -1,11 +1,11 @@
 "use client";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import ProductFilters from "@/components/products/ProductFilters";
 import ProductList from "@/components/products/ProductList";
 import { useInfiniteProducts } from "@/hooks/useInfiniteProducts";
 import type { Product } from "@/types/productTypes";
 import ProductModal from "./ProductModal";
-
+import { useUser } from "@/hooks/useUser";
 const PAGE_SIZE = 12;
 
 export type ProductFiltersType = {
@@ -13,13 +13,19 @@ export type ProductFiltersType = {
   onSale?: boolean;
   minPrice?: number;
   maxPrice?: number;
-};
+}
 
-export default function ProductosClient({ initialProducts, initialCategories,}: { initialProducts: Product[]; initialCategories: string[];}) {
+interface ProductosClientProps {
+  initialProducts: Product[];
+  initialCategories: string[];
+  initialFilters?: ProductFiltersType;
+}
+
+export default function ProductosClient({ initialProducts, initialCategories, initialFilters }: ProductosClientProps) {
   // Estado de filtros
-  const [filters, setFilters] = useState<ProductFiltersType>({});
+  const [filters, setFilters] = useState<ProductFiltersType>(initialFilters || {});
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-
+   const { user } = useUser();
   // Hook de productos infinitos
   const { products, loadMore, hasMore, loading } = useInfiniteProducts({
     initialProducts,
@@ -56,14 +62,8 @@ useEffect(() => {
   return (
     <div className="bg-[var(--background-color)] min-h-screen font-['Lexend',sans-serif] p-4">
       <ProductFilters categories={categories} filters={filters} setFilters={setFilters} />
-      <ProductList products={products} setEditingProduct={setEditingProduct} />
-      <ProductModal
-        open={!!editingProduct}
-        initialProduct={editingProduct || undefined}
-        onClose={() => setEditingProduct(null)}
-        onSaved={() => setEditingProduct(null)}
-        onDeleted={() => setEditingProduct(null)}
-      />
+      <ProductList products={products} setEditingProduct={setEditingProduct} user={user} />
+      <ProductModal open={!!editingProduct} initialProduct={editingProduct || undefined} onClose={() => setEditingProduct(null)} onSaved={() => setEditingProduct(null)} onDeleted={() => setEditingProduct(null)}/>
     </div>
   );
 }

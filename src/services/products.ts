@@ -20,6 +20,6 @@ export async function fetchProducts(filters: ProductFilters = {}) {
   if (filters.skip !== undefined) params.append("skip", String(filters.skip));
   if (filters.take !== undefined) params.append("take", String(filters.take));
 
-  const res = await api.get(`/products?${params.toString()}`);
+  const res = await api.get(`/products?${params.toString()}`) ;
   return res.data as Product[];
 }
