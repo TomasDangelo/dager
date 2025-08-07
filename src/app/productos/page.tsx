@@ -1,4 +1,3 @@
-// /app/productos/page.tsx
 import { fetchProducts } from "@/services/products";
 import ProductosClient from "@/components/products/ProductosClient";
 import type { Product } from "@/types/productTypes";

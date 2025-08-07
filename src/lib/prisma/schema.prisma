@@ -30,10 +30,25 @@ model Product {
   description String
   onSale      Boolean     @default(false)
   saleText    String?
-  category    String
+  subcategoryId String
+  subcategory Subcategory @relation(fields: [subcategoryId], references: [id])
   orderItems  OrderItem[]
   cartItems   CartItem[]
 }
+
+model Category {
+  id String @id @default(uuid())
+  name String @unique
+  subcategories Subcategory[]
+}
+
+model Subcategory {
+  id String @id @default(uuid())
+  name String @unique
+  categories Category[] // <-- Relación many-to-many con Category
+  products Product[]
+}
+
 
 model Order {
   id        String      @id @default(uuid())
