@@ -1,11 +1,21 @@
-export type Product = {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    stock: number;
-    image: string;
-    onSale: boolean;
-    saleText?: string;
-    category: string;
+import { Product as PrismaProduct, Subcategory, Category } from '@prisma/client';
+
+export type CategoryWithSubcategories = Category & {
+    subcategories: Subcategory[];
+};
+
+export type ProductWithRelations = PrismaProduct & {
+    subcategory: Subcategory & {
+        categories: Category[];
+    };
+};
+
+export type Product = PrismaProduct;
+
+export type ProductFiltersType = {
+    categorySlug?: string;
+    subcategorySlug?: string;
+    onSale?: boolean;
+    minPrice?: number;
+    maxPrice?: number;
 }

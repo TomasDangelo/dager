@@ -20,7 +20,8 @@ export async function GET(request: Request) {
 
   const skip = parseInt(searchParams.get("skip")  || "0", 10);
   const take = parseInt(searchParams.get("take")  || "20", 10);
-  const category = searchParams.get("category") || undefined;
+  const categorySlug = searchParams.get("categorySlug") || undefined;
+  const subcategorySlug = searchParams.get("subcategorySlug") || undefined;
   const onSale = searchParams.get("onSale") === "true";
   const hasOnSale = searchParams.has("onSale");
   const minPrice = searchParams.has("minPrice") ? parseFloat(searchParams.get("minPrice")!) : undefined;
@@ -28,7 +29,6 @@ export async function GET(request: Request) {
 
   const andFilters: andFiltersType[] = [];
 
-  if (category) andFilters.push({ category });
   if (hasOnSale) andFilters.push({ onSale });
   // solo agregamos si vino minPrice o maxPrice por params
   if (minPrice !== undefined || maxPrice !== undefined) {
@@ -40,10 +40,30 @@ export async function GET(request: Request) {
     });
   }
 
+  const whereClause: any = { AND: andFilters };
+
+  if (categorySlug || subcategorySlug) {
+    whereClause.subcategory = {
+      name: subcategorySlug ? subcategorySlug.replace(/-/g, ' ') : undefined,
+      categories: {
+        some: {
+          name: categorySlug ? categorySlug.replace(/-/g, ' ') : undefined,
+        },
+      },
+    };
+  }
+
   const products = await prisma.product.findMany({
     skip,
     take,
-    where: andFilters.length ? { AND: andFilters } : {},
+    where: whereClause,
+    include: {
+      subcategory: {
+        include: {
+          categories: true,
+        },
+      },
+    },
   });
 
   return NextResponse.json(products);

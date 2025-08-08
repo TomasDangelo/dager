@@ -1,3 +1,5 @@
+// app/api/admin/products/route.ts
+
 import { prisma } from '@/lib/prisma/client';
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../auth/requireAuth';
@@ -10,7 +12,11 @@ import { revalidatePath } from "next/cache";
 export async function GET() {
   const user = await requireAuth();
   requireAdmin(user);
-  const products = await prisma.product.findMany();
+  const products = await prisma.product.findMany({
+    include: {
+      subcategory: true,
+    },
+  });
   return NextResponse.json(products);
 }
 
@@ -23,6 +29,7 @@ export async function POST(request: Request) {
   if (!parse.success) return errorResponse("Datos inválidos", 400);
 
   const product = await prisma.product.create({ data: parse.data });
+  revalidatePath("/productos", 'layout');
   return NextResponse.json(product, { status: 201 });
 }
 
@@ -38,8 +45,8 @@ export async function PUT(request: Request) {
     where: { id },
     data: parse.data,
   });
-  revalidatePath("/productos"); // revalida la página estática SSR y la home 
-  revalidatePath("/"); 
+  revalidatePath("/productos", 'layout');
+  revalidatePath("/");
   return NextResponse.json(product);
 }
 
@@ -49,5 +56,6 @@ export async function DELETE(request: Request) {
   requireAdmin(user);
   const { id } = await request.json();
   await prisma.product.delete({ where: { id } });
+  revalidatePath("/productos", 'layout');
   return NextResponse.json({ message: "Producto eliminado" });
 }

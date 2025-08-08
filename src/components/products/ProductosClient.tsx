@@ -3,42 +3,35 @@ import { useState, useMemo, useEffect } from "react";
 import ProductFilters from "@/components/products/ProductFilters";
 import ProductList from "@/components/products/ProductList";
 import { useInfiniteProducts } from "@/hooks/useInfiniteProducts";
-import type { Product } from "@/types/productTypes";
+import type { ProductWithRelations, CategoryWithSubcategories } from "@/types/productTypes";
 import ProductModal from "./ProductModal";
 import { useUser } from "@/hooks/useUser";
 const PAGE_SIZE = 12;
 
 export type ProductFiltersType = {
-  category?: string;
+  categorySlug?: string;
+  subcategorySlug?: string;
   onSale?: boolean;
   minPrice?: number;
   maxPrice?: number;
 }
 
 interface ProductosClientProps {
-  initialProducts: Product[];
-  initialCategories: string[];
-  initialFilters?: ProductFiltersType;
+  initialProducts: ProductWithRelations[];
+  allCategories: CategoryWithSubcategories[];
+  initialFilters: ProductFiltersType;
 }
 
-export default function ProductosClient({ initialProducts, initialCategories, initialFilters }: ProductosClientProps) {
-  // Estado de filtros
-  const [filters, setFilters] = useState<ProductFiltersType>(initialFilters || {});
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-   const { user } = useUser();
+export default function ProductosClient({ initialProducts, allCategories, initialFilters }: ProductosClientProps) {
+  const [editingProduct, setEditingProduct] = useState<ProductWithRelations | null>(null);
+  const { user } = useUser();
+
   // Hook de productos infinitos
   const { products, loadMore, hasMore, loading } = useInfiniteProducts({
     initialProducts,
-    filters,
+    filters: initialFilters,
     pageSize: PAGE_SIZE,
   });
-
-  // Categorías únicas (de iniciales y de productos actuales)
-  const categories = useMemo(() => {
-    const set = new Set<string>(initialCategories);
-    products.forEach((p) => p.category && set.add(p.category));
-    return Array.from(set);
-  }, [products, initialCategories]);
 
   // Scroll infinito: carga más productos al llegar cerca del final
 useEffect(() => {
@@ -61,7 +54,7 @@ useEffect(() => {
 
   return (
     <div className="bg-[var(--background-color)] min-h-screen font-['Lexend',sans-serif] p-4">
-      <ProductFilters categories={categories} filters={filters} setFilters={setFilters} />
+      <ProductFilters allCategories={allCategories} initialFilters={initialFilters} />
       <ProductList products={products} setEditingProduct={setEditingProduct} user={user} />
       <ProductModal open={!!editingProduct} initialProduct={editingProduct || undefined} onClose={() => setEditingProduct(null)} onSaved={() => setEditingProduct(null)} onDeleted={() => setEditingProduct(null)}/>
     </div>

@@ -1,8 +1,8 @@
 import { User } from "@/types/userTypes";
 import ProductCard from "./ProductCard";
-import type { Product } from "@/types/productTypes";
+import type { ProductWithRelations  } from "@/types/productTypes";
 
-export default function ProductList({ products, setEditingProduct, user }: { products: Product[], setEditingProduct?: (product: Product) => void, user?: User | null }) {
+export default function ProductList({ products, setEditingProduct, user }: { products: ProductWithRelations[], setEditingProduct?: (product: Product) => void, user?: User | null }) {
   if (!products.length) return <div className="text-center text-[var(--text-secondary)] py-8">No hay productos para mostrar.</div>;
   console.log(products)
   return (

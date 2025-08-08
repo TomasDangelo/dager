@@ -1,14 +1,14 @@
-import type { Product } from "@/types/productTypes";
 import Link from "next/link";
 import AddToCartButton from "../cart/AddToCartButton";
 import { User } from "@/types/userTypes";
+import type { ProductWithRelations } from "@/types/productTypes";
 
-export default function ProductCard({ product, onEdit, user }: { product: Product, onEdit?: () => void; user?: User | null }) {
+export default function ProductCard({ product, onEdit, user }: { product: ProductWithRelations, onEdit?: () => void; user?: User | null }) {
 
 
  return (
     <div className="group flex flex-col gap-2 bg-[var(--card-background-color)] p-3 rounded-xl shadow-lg hover:shadow-2xl transition-shadow transform hover:-translate-y-1 relative">
-      <Link href={`/productos/${product.id}`} className="block">
+      <Link href={`/productos/item/${product.id}`} className="block">
         <div
           className="aspect-[3/4] bg-cover bg-center rounded-lg"
           style={{ backgroundImage: `url('${product.image}')` }}

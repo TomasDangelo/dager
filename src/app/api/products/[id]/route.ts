@@ -9,7 +9,16 @@ import { productSchema } from '@/lib/validation/productSchema';
 // Obtener un producto específico
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
-  const product = await prisma.product.findUnique({where: { id }});
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: {
+      subcategory: {
+        include: {
+          categories: true
+        }
+      }
+    }
+  });
 
   if (!product) {
     return errorResponse("Producto no encontrado", 404);

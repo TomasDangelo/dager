@@ -1,7 +1,7 @@
-import { Product } from "@/types/productTypes";
+import { ProductWithRelations } from "@/types/productTypes";
 import AddToCartButton from "../cart/AddToCartButton";
 
-export default function ProductDetail({ product }: { product: Product }) {
+export default function ProductDetail({ product }: { product: ProductWithRelations }) {
 
     if (!product) return <p className="text-gray-400 text-center mt-10">Producto no encontrado</p>;
 
@@ -19,7 +19,13 @@ export default function ProductDetail({ product }: { product: Product }) {
                     {product.onSale && <span className="bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full">¡En oferta!</span>}
                 </div>
                 <p className="text-gray-400">Stock: <span className="font-semibold">{product.stock}</span></p>
-                {product.category && <p className="text-gray-400">Categoría: <span className="font-semibold">{product.category}</span></p>}
+                {product.subcategory && (
+                    <p className="text-gray-400">
+                        Categoría: <span className="font-semibold">{product.subcategory.categories[0]?.name}</span>
+                        {" / "}
+                        Subcategoría: <span className="font-semibold">{product.subcategory.name}</span>
+                    </p>
+                )}
                 
                 <div className="mt-6">
                   <AddToCartButton product={product}>
