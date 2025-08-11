@@ -12,10 +12,11 @@ export type ProductWithRelations = PrismaProduct & {
 
 export type Product = PrismaProduct;
 
-export type ProductFiltersType = {
-    categorySlug?: string;
-    subcategorySlug?: string;
-    onSale?: boolean;
-    minPrice?: number;
-    maxPrice?: number;
-}
+
+export type ProductFilter = {
+  categorySlug?: string;
+  subcategorySlug?: string;
+  onSale?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+};

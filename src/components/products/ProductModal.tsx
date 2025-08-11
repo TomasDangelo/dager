@@ -1,9 +1,10 @@
+// src/components/products/ProductModal.tsx
 'use client';
-import { useState, useEffect } from "react";
+
+import { useEffect, useState } from "react";
 import { productSchema } from "@/lib/validation/productSchema";
-import { api } from "@/services/api";
-import type { ProductWithRelations, CategoryWithSubcategories } from "@/types/productTypes";
-import { ZodError } from "zod";
+import type { ProductWithRelations } from "@/types/productTypes";
+import { createOrUpdateProduct, deleteProductById } from "@/app/_actions/productActions";
 
 interface ProductModalProps {
   open: boolean;
@@ -11,20 +12,16 @@ interface ProductModalProps {
   initialProduct?: Partial<ProductWithRelations>;
   onSaved?: (product: ProductWithRelations) => void;
   onDeleted?: (id: string) => void;
-  allCategories: CategoryWithSubcategories[];
 }
 
-export default function ProductModal({ open, onClose, initialProduct, onSaved, onDeleted, allCategories }: ProductModalProps) {
-  const [form, setForm] = useState<Partial<ProductWithRelations>>({});
-  const [error, setError] = useState("");
+export default function ProductModal({ open, onClose, initialProduct, onSaved, onDeleted }: ProductModalProps) {
+  const [form, setForm] = useState<Partial<ProductWithRelations>>(initialProduct || {});
+  const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
+  // sincronizar cuando cambian las props
   useEffect(() => {
-    if (initialProduct) {
-      setForm(initialProduct);
-    } else {
-      setForm({});
-    }
+    setForm(initialProduct || {});
     setError("");
   }, [initialProduct, open]);
 
@@ -35,28 +32,23 @@ export default function ProductModal({ open, onClose, initialProduct, onSaved, o
     setError("");
     setLoading(true);
 
-    try {
-      // Validación con Zod
-      const parsed = productSchema.parse(form);
+    // Validación en el cliente (amigable)
+    const parsed = productSchema.safeParse(form);
+    if (!parsed.success) {
+      setError("Datos inválidos. Revisa los campos.");
+      setLoading(false);
+      return;
+    }
 
-      let product: ProductWithRelations;
-      if (form.id) {
-        // Editar
-        const res = await api.put(`/admin/products/${form.id}`, parsed);
-        product = res.data;
-      } else {
-        // Crear
-        const res = await api.post("/admin/products", parsed);
-        product = res.data;
-      }
-      onSaved?.(product);
+    try {
+      // Llamada al server action (se ejecuta en el servidor)
+      const saved = await createOrUpdateProduct(parsed.data);
+      // saved contiene el producto con relaciones (dependiendo de include en la action)
+      onSaved?.(saved as ProductWithRelations);
       onClose();
     } catch (err: any) {
-      if (err instanceof ZodError) {
-        setError(err.errors.map(e => e.message).join(", "));
-      } else {
-        setError(err?.response?.data?.error || "Error al guardar");
-      }
+      console.error("Error saving product (server action):", err);
+      setError(err?.message || "Error al guardar producto");
     } finally {
       setLoading(false);
     }
@@ -64,88 +56,67 @@ export default function ProductModal({ open, onClose, initialProduct, onSaved, o
 
   async function handleDelete() {
     if (!form.id) return;
-    if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
+    if (!confirm("¿Seguro que desea eliminar este producto?")) return;
     setLoading(true);
     try {
-      await api.delete(`/admin/products/${form.id}`);
-      onDeleted?.(form.id);
-      onClose();
+      const res = await deleteProductById(form.id as string);
+      if (res?.success) {
+        onDeleted?.(form.id as string);
+        onClose();
+      }
     } catch (err: any) {
-      setError(err?.response?.data?.error || "Error al eliminar");
+      console.error("Error delete product:", err);
+      setError(err?.message || "Error al eliminar producto");
     } finally {
       setLoading(false);
     }
   }
 
-  const selectedCategory = allCategories.find(c =>
-    c.subcategories.some(s => s.id === form.subcategoryId)
-  );
-
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
-      <form onSubmit={handleSubmit} className="bg-[var(--card-background-color)] text-white p-8 rounded-xl shadow-2xl w-full max-w-lg flex flex-col gap-4 relative">
-        <button type="button" className="absolute top-2 right-4 text-2xl" onClick={onClose}>&times;</button>
+      <form onSubmit={handleSubmit} className="bg-[var(--card-background-color)] text-white p-6 rounded-xl w-full max-w-lg">
+        <button type="button" className="absolute top-4 right-6 text-2xl" onClick={onClose}>&times;</button>
         <h2 className="text-2xl font-bold mb-2">{form.id ? "Editar producto" : "Nuevo producto"}</h2>
-        <label className="font-semibold">Nombre
-          <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Nombre" value={form.name || ""} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
-        </label>
-        <label className="font-semibold">Imagen (URL)
-          <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Imagen (URL)" value={form.image || ""} onChange={e => setForm(f => ({ ...f, image: e.target.value }))} required />
-        </label>
-        <label className="font-semibold">Precio
-          <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Precio" type="number" value={form.price ?? ""} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))} required min={0} />
-        </label>
-        <label className="font-semibold">Stock
-          <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Stock" type="number" value={form.stock ?? ""} onChange={e => setForm(f => ({ ...f, stock: Number(e.target.value) }))} required min={0} />
+
+        <label className="block mb-2">
+          <span className="text-sm font-semibold">Nombre</span>
+          <input className="w-full p-2 rounded mt-1 bg-[var(--background-color)] border" value={form.name || ""} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
         </label>
 
-        <label className="font-semibold">Categoría
-          <select
-            className="p-2 rounded bg-[var(--background-color)] border w-full"
-            value={selectedCategory?.id || ''}
-            onChange={e => {
-              const newCategory = allCategories.find(c => c.id === e.target.value);
-              setForm(f => ({ ...f, subcategoryId: newCategory?.subcategories[0]?.id || undefined }));
-            }}
-            required
-          >
-            <option value="">Selecciona una categoría</option>
-            {allCategories.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
+        <label className="block mb-2">
+          <span className="text-sm font-semibold">Imagen (URL)</span>
+          <input className="w-full p-2 rounded mt-1 bg-[var(--background-color)] border" value={form.image || ""} onChange={e => setForm(f => ({ ...f, image: e.target.value }))} required />
         </label>
 
-        <label className="font-semibold">Subcategoría
-          <select
-            className="p-2 rounded bg-[var(--background-color)] border w-full"
-            value={form.subcategoryId || ''}
-            onChange={e => setForm(f => ({ ...f, subcategoryId: e.target.value || undefined }))}
-            required
-            disabled={!selectedCategory}
-          >
-            <option value="">Selecciona una subcategoría</option>
-            {selectedCategory?.subcategories.map(sub => (
-              <option key={sub.id} value={sub.id}>{sub.name}</option>
-            ))}
-          </select>
+        <div className="grid grid-cols-2 gap-3">
+          <label>
+            <span className="text-sm font-semibold">Precio</span>
+            <input type="number" min={0} className="w-full p-2 rounded mt-1 bg-[var(--background-color)] border" value={form.price ?? ""} onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))} required />
+          </label>
+          <label>
+            <span className="text-sm font-semibold">Stock</span>
+            <input type="number" min={0} className="w-full p-2 rounded mt-1 bg-[var(--background-color)] border" value={form.stock ?? ""} onChange={e => setForm(f => ({ ...f, stock: Number(e.target.value) }))} required />
+          </label>
+        </div>
+
+        <label className="block my-2">
+          <span className="text-sm font-semibold">Descripción</span>
+          <textarea className="w-full p-2 rounded mt-1 bg-[var(--background-color)] border" value={form.description || ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
         </label>
 
-        <label className="font-semibold">Descripción
-          <textarea className="p-2 rounded bg-[var(--background-color)] border" placeholder="Descripción" value={form.description || ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} required />
-        </label>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={form.onSale || false} onChange={e => setForm(f => ({ ...f, onSale: e.target.checked }))} />
-          En oferta
-        </label>
+        <div className="flex items-center gap-4 mt-2">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={!!form.onSale} onChange={e => setForm(f => ({ ...f, onSale: e.target.checked }))} />
+            <span>En oferta</span>
+          </label>
+          <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Texto oferta" value={form.saleText || ""} onChange={e => setForm(f => ({ ...f, saleText: e.target.value }))} />
+        </div>
 
-        <input className="p-2 rounded bg-[var(--background-color)] border" placeholder="Texto de oferta" value={form.saleText || ""} onChange={e => setForm(f => ({ ...f, saleText: e.target.value }))} />
-        {error && <span className="text-red-400">{error}</span>}
-        <div className="flex gap-2 mt-2">
-          <button type="submit" disabled={loading} className="bg-[var(--primary-color)] text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition">{form.id ? "Guardar" : "Crear"}</button>
-          {form.id && (
-            <button type="button" disabled={loading} onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded font-bold hover:bg-red-700 transition">Eliminar</button>
-          )}
+        {error && <div className="text-red-400 mt-2">{error}</div>}
+
+        <div className="flex gap-2 justify-end mt-4">
+          {form.id && <button type="button" onClick={handleDelete} disabled={loading} className="bg-red-600 px-4 py-2 rounded">Eliminar</button>}
+          <button type="submit" disabled={loading} className="bg-[var(--primary-color)] px-4 py-2 rounded">{loading ? "Guardando..." : (form.id ? "Guardar" : "Crear")}</button>
         </div>
       </form>
     </div>

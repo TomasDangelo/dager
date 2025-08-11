@@ -1,38 +1,37 @@
-import { fetchProducts, fetchCategoriesWithSubcategories } from "@/services/products";
+// src/app/productos/[categorySlug]/[subcategorySlug]/page.tsx
 import ProductosClient from "@/components/products/ProductosClient";
-import type { ProductWithRelations, CategoryWithSubcategories } from "@/types/productTypes";
+import type { ProductWithRelations, CategoryWithSubcategories, ProductFilter } from "@/types/productTypes";
+import { getProductsServer, fetchCategoriesWithSubcategoriesServer } from "@/services/products.server";
 
 type Props = {
-  params: {
-    categorySlug: string;
-    subcategorySlug: string;
-  };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: Promise<{ categorySlug: string; subcategorySlug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default async function ProductosSubcategoryPage({ params, searchParams }: Props) {
-  const initialProducts: ProductWithRelations[] = await fetchProducts({
+  const { categorySlug, subcategorySlug } = await params;
+  const resolvedSearchParams = await searchParams;
+
+  const filters: ProductFilter = {
+    categorySlug,
+    subcategorySlug,
+    onSale: resolvedSearchParams?.onSale === "true" ? true : undefined,
+    minPrice: resolvedSearchParams?.minPrice ? Number(resolvedSearchParams.minPrice as string) : undefined,
+    maxPrice: resolvedSearchParams?.maxPrice ? Number(resolvedSearchParams.maxPrice as string) : undefined,
+  };
+
+  const initialProducts: ProductWithRelations[] = await getProductsServer({
     take: 12,
-    ...searchParams,
-    categorySlug: params.categorySlug,
-    subcategorySlug: params.subcategorySlug,
+    ...filters,
   });
 
-  const allCategories: CategoryWithSubcategories[] = await fetchCategoriesWithSubcategories();
-
-  const initialFilters = {
-    categorySlug: params.categorySlug,
-    subcategorySlug: params.subcategorySlug,
-    onSale: searchParams?.onSale === "true",
-    minPrice: searchParams?.minPrice ? Number(searchParams.minPrice) : undefined,
-    maxPrice: searchParams?.maxPrice ? Number(searchParams.maxPrice) : undefined,
-  };
+  const allCategories: CategoryWithSubcategories[] = await fetchCategoriesWithSubcategoriesServer();
 
   return (
     <ProductosClient
       initialProducts={initialProducts}
       allCategories={allCategories}
-      initialFilters={initialFilters}
+      initialFilters={filters}
     />
   );
 }

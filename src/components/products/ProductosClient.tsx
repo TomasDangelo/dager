@@ -1,62 +1,60 @@
-"use client";
-import { useState, useMemo, useEffect } from "react";
-import ProductFilters from "@/components/products/ProductFilters";
-import ProductList from "@/components/products/ProductList";
-import { useInfiniteProducts } from "@/hooks/useInfiniteProducts";
-import type { ProductWithRelations, CategoryWithSubcategories } from "@/types/productTypes";
+'use client';
+
+import { useMemo, useState } from "react";
+import type { ProductWithRelations, CategoryWithSubcategories, ProductFilter } from "@/types/productTypes";
+import ProductFilters from "./ProductFilters";
+import ProductList from "./ProductList";
 import ProductModal from "./ProductModal";
+import { useInfiniteProducts } from "@/hooks/useInfiniteProducts";
+import Spinner from "@/components/ui/Spinner";
 import { useUser } from "@/hooks/useUser";
+
 const PAGE_SIZE = 12;
 
-export type ProductFiltersType = {
-  categorySlug?: string;
-  subcategorySlug?: string;
-  onSale?: boolean;
-  minPrice?: number;
-  maxPrice?: number;
-}
-
-interface ProductosClientProps {
+export default function ProductosClient({
+  initialProducts,
+  allCategories,
+  initialFilters = {},
+}: {
   initialProducts: ProductWithRelations[];
   allCategories: CategoryWithSubcategories[];
-  initialFilters: ProductFiltersType;
-}
-
-export default function ProductosClient({ initialProducts, allCategories, initialFilters }: ProductosClientProps) {
+  initialFilters?: ProductFilter;
+}) {
+  const [filters, setFilters] = useState<ProductFilter>(initialFilters);
   const [editingProduct, setEditingProduct] = useState<ProductWithRelations | null>(null);
   const { user } = useUser();
 
-  // Hook de productos infinitos
-  const { products, loadMore, hasMore, loading } = useInfiniteProducts({
+  const { products, loadMore, hasMore, loading, replaceProduct } = useInfiniteProducts({
     initialProducts,
-    filters: initialFilters,
+    filters,
     pageSize: PAGE_SIZE,
   });
 
-  // Scroll infinito: carga más productos al llegar cerca del final
-useEffect(() => {
-  let timer: NodeJS.Timeout;
-  const onScroll = () => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400 && hasMore && !loading) {
-        loadMore();
-      }
-    }, 200); // 200 ms de debounce
-  };
-  window.addEventListener("scroll", onScroll);
-  return () => {
-    clearTimeout(timer);
-    window.removeEventListener("scroll", onScroll);
-  };
-}, [loadMore, hasMore, loading]);
-
-
   return (
     <div className="bg-[var(--background-color)] min-h-screen font-['Lexend',sans-serif] p-4">
-      <ProductFilters allCategories={allCategories} initialFilters={initialFilters} />
-      <ProductList products={products} setEditingProduct={setEditingProduct} user={user} />
-      <ProductModal open={!!editingProduct} initialProduct={editingProduct || undefined} onClose={() => setEditingProduct(null)} onSaved={() => setEditingProduct(null)} onDeleted={() => setEditingProduct(null)}/>
+      <ProductFilters allCategories={allCategories} initialFilters={filters} />
+      <ProductList products={products} setEditingProduct={setEditingProduct} user={user} loading={loading} />
+
+      <div className="mt-6 text-center">
+        {hasMore && (
+          <button onClick={() => loadMore()} className="px-4 py-2 bg-[var(--primary-color)] text-white rounded" disabled={loading}>
+            {loading ? "Cargando..." : "Cargar más"}
+          </button>
+        )}
+      </div>
+
+      <ProductModal
+        open={!!editingProduct}
+        initialProduct={editingProduct ?? undefined}
+        onClose={() => setEditingProduct(null)}
+        onSaved={(prod) => {
+          replaceProduct(prod);
+          setEditingProduct(null);
+        }}
+        onDeleted={(id) => {
+          setEditingProduct(null);
+        }}
+      />
     </div>
   );
 }
